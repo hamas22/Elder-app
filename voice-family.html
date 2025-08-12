@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ملاحظات صوتية - للعائلة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .note-item {
+            animation: fadeIn 0.5s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .note-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .return-button {
+            transition: all 0.3s ease;
+        }
+        .return-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+       .note-item audio::-webkit-media-controls-panel {
+            background-color: #4f46e5;
+            color: #ffffff;
+            border-radius: 9999px; 
+        }
+        .note-item audio::-webkit-media-controls-play-button,
+        .note-item audio::-webkit-media-controls-current-time-display,
+        .note-item audio::-webkit-media-controls-time-remaining-display {
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-300 to-blue-500 p-8">
+
+    <a href="family-home.html" class="absolute top-5 right-5 z-10">
+        <button class="return-button p-2 rounded-full border-2 border-white/80 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+        </button>
+    </a>
+
+    <div class="max-w-3xl mx-auto card rounded-3xl p-8 md:p-12 text-gray-800">
+        <h1 class="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-8 mt-4">
+            ملاحظات المُسن الصوتية 🔊
+        </h1>
+
+        <p id="infoMsg" class="text-center text-lg text-gray-700 font-semibold mb-6"></p>
+
+        <ul id="notesList" class="space-y-4"></ul>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBfkZJ8uto9wZ-N4_RdFvRtUhhnfwvBbk",
+            authDomain: "elder-app-26500.firebaseapp.com",
+            projectId: "elder-app-26500",
+            storageBucket: "elder-app-26500.appspot.com",
+            messagingSenderId: "104692158450",
+            appId: "1:104692158450:web:4c368876ebc9f43e42656b",
+            measurementId: "G-WHQRY7EGZW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const notesList = document.getElementById('notesList');
+        const infoMsg = document.getElementById('infoMsg');
+
+        const elderPhone = localStorage.getItem('elderPhone');
+
+        if (!elderPhone) {
+            alert("يرجى تسجيل الدخول كفرد من العائلة أولاً.");
+            window.location.href = 'family-login.html'; 
+        }
+
+        async function loadNotes() {
+            notesList.innerHTML = '';
+            infoMsg.textContent = 'جاري تحميل الملاحظات...';
+
+            try {
+                const voiceNotesRef = collection(db, "voiceNotes");
+                const q = query(voiceNotesRef, where("elderPhone", "==", elderPhone));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    infoMsg.textContent = 'لم يتم العثور على ملاحظات صوتية لهذا المُسن.';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const noteData = doc.data();
+                    addNoteToList(noteData.audioUrl, noteData.label);
+                });
+
+                infoMsg.textContent = '';
+            } catch (e) {
+                console.error("خطأ في تحميل الملاحظات: ", e);
+                infoMsg.textContent = 'حدث خطأ أثناء تحميل الملاحظات.';
+            }
+        }
+
+        function addNoteToList(audioUrl, label) {
+            const li = document.createElement('li');
+            li.classList.add('note-item', 'bg-white/70', 'p-4', 'rounded-xl', 'shadow-md', 'flex', 'flex-col', 'md:flex-row', 'md:items-center', 'md:justify-between', 'space-y-4', 'md:space-y-0');
+
+            const span = document.createElement('span');
+            span.className = 'note-label text-gray-800 font-semibold truncate ml-4';
+            span.textContent = label;
+
+            const audio = document.createElement('audio');
+            audio.controls = true;
+            audio.src = audioUrl;
+            audio.classList.add('w-full', 'md:w-auto', 'md:flex-grow');
+
+            li.appendChild(span);
+            li.appendChild(audio);
+
+            notesList.appendChild(li);
+        }
+        
+        window.onload = loadNotes;
+    </script>
+</body>
+</html>

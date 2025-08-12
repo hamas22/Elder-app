@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>جدولة العلاج</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #a1a5f3, #6b8de3);
+            min-height: 100vh;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container {
+            animation: fadeIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 10px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: #1f2937;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.4);
+        }
+
+        .day-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid transparent;
+            color: #1f2937;
+            transition: all 0.3s ease;
+        }
+
+        .day-btn.selected {
+            background: #4f46e5;
+            color: #ffffff;
+            border-color: #4f46e5;
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
+        .day-btn:hover {
+            transform: scale(1.05);
+            background: rgba(79, 70, 229, 0.2);
+        }
+
+        .main-btn {
+            background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .main-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
+        }
+        
+        .table-header {
+            background-color: rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .table-row-hover:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .table-body-text {
+            color: #1f2937;
+        }
+        
+        .return-button {
+            background-color: transparent;
+            border: 2px solid #000000;
+            color: #000000;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .return-button:hover {
+            background-color: #d4c9c9;
+            color: #1c0070;
+        }
+    </style>
+</head>
+<body class="p-4 text-white">
+ <a href="family-home.html" class="absolute top-5 right-5 z-10 ">
+    <button class="return-button" aria-label="العودة إلى الصفحة الرئيسية">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </button>
+  </a>
+    <div class="container max-w-3xl mx-auto card p-6 md:p-10 rounded-3xl">
+        <h2 class="text-3xl md:text-5xl text-center font-bold mb-8 text-white text-shadow-lg drop-shadow-md">
+            جدولة العلاج للمريض 💊
+        </h2>
+
+        <form id="treatmentForm" class="space-y-6">
+            <div>
+                <label for="treatmentName" class="block font-semibold mb-2 text-gray-800">اسم العلاج:</label>
+                <input type="text" id="treatmentName" class="w-full p-4 rounded-xl input-field placeholder-gray-500 focus:outline-none" placeholder="أدخل اسم العلاج" required />
+            </div>
+
+            <div>
+                <label class="block font-semibold mb-2 text-gray-800">اختر الأيام:</label>
+                <div id="daysSelect" class="flex flex-wrap gap-2 justify-center sm:justify-start">
+                    <button type="button" class="day-btn font-medium py-2 px-4 rounded-full" data-value="Saturday">السبت</button>
+                    <button type="button" class="day-btn font-medium py-2 px-4 rounded-full" data-value="Sunday">الأحد</button>
+                    <button type="button" class="day-btn font-medium py-2 px-4 rounded-full" data-value="Monday">الاثنين</button>
+                    <button type="button" class="day-btn font-medium py-2 px-4 rounded-full" data-value="Tuesday">الثلاثاء</button>
+                    <button type="button" class="day-btn font-medium py-2 px-4 rounded-full" data-value="Wednesday">الأربعاء</button>
+                    <button type="button" class="day-btn font-medium py-2 px-4 rounded-full" data-value="Thursday">الخميس</button>
+                    <button type="button" class="day-btn font-medium py-2 px-4 rounded-full" data-value="Friday">الجمعة</button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block font-semibold mb-2 text-gray-800">المواعيد:</label>
+                <div id="timesContainer">
+                    <div class="flex items-center gap-2 mb-2">
+                        <input type="time" class="time-input w-full p-4 rounded-xl input-field" required />
+                    </div>
+                </div>
+                <button type="button" class="btn-add-time mt-2 text-white bg-indigo-500 hover:bg-indigo-600 transition-all duration-300 font-medium py-2 px-4 rounded-full flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    إضافة موعد آخر
+                </button>
+            </div>
+
+            <button type="submit" class="w-full main-btn text-white font-bold py-4 rounded-xl shadow-lg transform hover:scale-105">
+                إضافة العلاج
+            </button>
+        </form>
+
+        <table id="treatmentTable" class="w-full mt-10 rounded-2xl overflow-hidden text-center shadow-lg">
+            <thead class="table-header">
+                <tr>
+                    <th class="p-4">اسم العلاج</th>
+                    <th class="p-4">الأيام</th>
+                    <th class="p-4">المواعيد</th>
+                    <th class="p-4">إجراء</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-300 table-body-text">
+                </tbody>
+        </table>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import {
+        getFirestore,
+        collection,
+        addDoc,
+        getDocs,
+        query,
+        where,
+        deleteDoc,
+        doc
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCBfkZJ8uto9wZ-N4_RdFvRtUhhnfwvBbk",
+        authDomain: "elder-app-26500.firebaseapp.com",
+        projectId: "elder-app-26500",
+        storageBucket: "elder-app-26500.appspot.com",
+        messagingSenderId: "104692158450",
+        appId: "1:104692158450:web:4c368876ebc9f43e42656b",
+        measurementId: "G-WHQRY7EGZW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const familyName = localStorage.getItem('familyName');
+    const elderName = localStorage.getItem('elderName');
+    const elderPhone = localStorage.getItem('elderPhone');
+
+    const form = document.getElementById('treatmentForm');
+    const daysSelectContainer = document.getElementById('daysSelect');
+    const timesContainer = document.getElementById('timesContainer');
+    const treatmentTableBody = document.querySelector('#treatmentTable tbody');
+    const addTimeBtn = document.querySelector('.btn-add-time');
+
+    let treatments = [];
+
+    function renderTable() {
+        treatmentTableBody.innerHTML = '';
+        treatments.forEach((treatment) => {
+            const daysText = treatment.days.join(', ');
+            const timesText = treatment.times.join(', ');
+            const tr = document.createElement('tr');
+            tr.className = 'table-row-hover transition-colors duration-200';
+            tr.innerHTML = `
+                <td class="p-3">${treatment.treatmentName}</td>
+                <td class="p-3">${daysText}</td>
+                <td class="p-3">${timesText}</td>
+                <td class="p-3">
+                    <button class="btn-delete bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300" data-id="${treatment.id}">
+                        حذف
+                    </button>
+                </td>
+            `;
+            treatmentTableBody.appendChild(tr);
+        });
+    }
+
+    async function loadTreatmentsFromFirebase() {
+        if (!elderPhone || !elderName) {
+            alert("الاسم أو رقم الهاتف غير موجود. يرجى تسجيل الدخول أولاً.");
+            window.location.href = 'family-login.html';
+            return;
+        }
+
+        try {
+            const q = query(
+                collection(db, "medicines"),
+                where("phone", "==", elderPhone),
+                where("name", "==", elderName)
+            );
+            const querySnapshot = await getDocs(q);
+
+            treatments = [];
+            querySnapshot.forEach((doc) => {
+                treatments.push({ id: doc.id, ...doc.data() });
+            });
+            renderTable();
+        } catch (error) {
+            console.error("Error loading treatments:", error);
+            alert("فشل في تحميل العلاجات. حاول مرة أخرى.");
+        }
+    }
+
+    async function deleteTreatment(id) {
+        if (!confirm("هل أنت متأكد أنك تريد حذف هذا العلاج؟")) {
+            return;
+        }
+        try {
+            await deleteDoc(doc(db, "medicines", id));
+            treatments = treatments.filter(t => t.id !== id);
+            renderTable();
+            console.log("تم حذف العلاج بنجاح!");
+        } catch (error) {
+            console.error("Error deleting treatment:", error);
+            alert("فشل في حذف العلاج. حاول مرة أخرى.");
+        }
+    }
+
+    daysSelectContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('day-btn')) {
+            e.target.classList.toggle('selected');
+        }
+    });
+
+    addTimeBtn.addEventListener('click', () => {
+        const newTimeInputDiv = document.createElement('div');
+        newTimeInputDiv.className = 'flex items-center gap-2 mb-2';
+        newTimeInputDiv.innerHTML = `
+            <input type="time" class="time-input w-full p-4 rounded-xl input-field" required />
+            <button type="button" class="btn-remove-time text-red-500 hover:text-red-700 transition-colors duration-300 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        `;
+        timesContainer.appendChild(newTimeInputDiv);
+    });
+
+    timesContainer.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-remove-time')) {
+            e.target.closest('.flex').remove();
+        }
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const treatmentNameInput = document.getElementById('treatmentName').value.trim();
+        const selectedDayButtons = daysSelectContainer.querySelectorAll('.day-btn.selected');
+        const selectedDays = Array.from(selectedDayButtons).map(btn => btn.dataset.value);
+
+        if (selectedDays.length === 0) {
+            alert("يرجى اختيار يوم واحد على الأقل.");
+            return;
+        }
+
+        const timeInputs = timesContainer.querySelectorAll('.time-input');
+        const times = Array.from(timeInputs).map(input => input.value).filter(Boolean);
+
+        if (!elderPhone || !elderName) {
+            alert("الاسم أو رقم الهاتف غير موجود. يرجى إعادة تسجيل الدخول.");
+            window.location.href = 'family-login.html';
+            return;
+        }
+
+        const treatmentData = {
+            name: elderName,      
+            phone: elderPhone,    
+            treatmentName: treatmentNameInput, 
+            days: selectedDays,
+            times: times,
+            createdAt: new Date()
+        };
+
+        try {
+            const docRef = await addDoc(collection(db, "medicines"), treatmentData);
+            treatments.push({ id: docRef.id, ...treatmentData });
+            renderTable();
+
+            form.reset();
+            selectedDayButtons.forEach(btn => btn.classList.remove('selected'));
+            timesContainer.innerHTML = `
+                <div class="flex items-center gap-2 mb-2">
+                    <input type="time" class="time-input w-full p-4 rounded-xl input-field" required />
+                </div>
+            `;
+        } catch (error) {
+            console.error("Error adding treatment:", error);
+            alert("فشل في تسجيل العلاج. حاول مرة أخرى.");
+        }
+    });
+
+    treatmentTableBody.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-delete')) {
+            const id = e.target.closest('.btn-delete').dataset.id;
+            if (id) {
+                deleteTreatment(id);
+            }
+        }
+    });
+
+    window.addEventListener('load', loadTreatmentsFromFirebase);
+</script>
+</body>
+</html>

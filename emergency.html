@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تنبيه الطوارئ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap');
+
+    body {
+      background: linear-gradient(135deg, #ff4e50, #f9d423);
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .container-pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.6);
+      }
+      50% {
+        box-shadow: 0 0 45px 15px rgba(255, 0, 0, 1);
+      }
+    }
+
+    .alert-icon {
+      position: absolute;
+      font-size: 5rem;
+      opacity: 0.15;
+      animation: floatUp 6s linear infinite;
+      color: white;
+      top: 90%;
+      right: 50%; 
+      transform: translateX(50%); 
+      user-select: none;
+    }
+
+    .alert-icon:nth-child(1) {
+      animation-delay: 0s;
+    }
+    .alert-icon:nth-child(2) {
+      animation-delay: 2s;
+      right: 30%; 
+      font-size: 4rem;
+    }
+    .alert-icon:nth-child(3) {
+      animation-delay: 4s;
+      right: 70%; 
+      font-size: 6rem;
+    }
+
+    @keyframes floatUp {
+      0% {
+        top: 100%;
+        opacity: 0.15;
+      }
+      100% {
+        top: 10%;
+        opacity: 0;
+      }
+    }
+    .return-button {
+      background-color: transparent;
+      border: 2px solid #eee7e7;
+      color: #eedbdb;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .return-button:hover {
+      background-color: #d4c9c9;
+      color: #700063;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex justify-center items-center text-center text-white overflow-hidden relative">
+  
+  <a href="elder-home.html" class="absolute top-5 right-5 z-10">
+    <button class="return-button" aria-label="العودة إلى الصفحة الرئيسية">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </button>
+  </a>
+
+  <div class="container-pulse bg-red-600/85 p-10 rounded-full shadow-2xl mx-5 max-w-sm" role="main" aria-label="قسم تنبيه الطوارئ">
+    <h1 class="text-5xl md:text-6xl font-bold mb-5 text-shadow-lg drop-shadow-md">
+      طوارئ!
+    </h1>
+    <p class="text-xl md:text-2xl mb-10 font-semibold text-shadow-sm drop-shadow-md">
+      إذا كنت في خطر، اضغط على الزر أدناه لتنبيه عائلتك على الفور.
+    </p>
+    <button id="alertBtn" aria-label="إرسال تنبيه الطوارئ"
+      class="bg-white text-red-600 border-none px-12 py-5 text-2xl font-bold rounded-full cursor-pointer shadow-lg transition-all duration-300 transform hover:bg-red-600 hover:text-white hover:scale-110">
+      إرسال تنبيه
+    </button>
+  </div>
+
+  <div class="alert-icon" aria-hidden="true">⚠️</div>
+  <div class="alert-icon" aria-hidden="true">🚨</div>
+  <div class="alert-icon" aria-hidden="true">❗</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCBfkZJ8uto9wZ-N4_RdFvRtUhhnfwvBbk",
+    authDomain: "elder-app-26500.firebaseapp.com",
+    projectId: "elder-app-26500",
+    storageBucket: "elder-app-26500.appspot.com",
+    messagingSenderId: "104692158450",
+    appId: "1:104692158450:web:4c368876ebc9f43e42656b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const alertBtn = document.getElementById('alertBtn');
+  const elderID = localStorage.getItem('elderID');
+  const elderName = localStorage.getItem('elderName') || "المريض";
+
+  let alertActive = false;
+
+  checkExistingAlert();
+
+  async function checkExistingAlert() {
+    if (!elderID) return;
+    const alertRef = doc(db, "alerts", elderID);
+    const alertSnap = await getDoc(alertRef);
+    if (alertSnap.exists() && alertSnap.data().alert) {
+      alertActive = true;
+      alertBtn.textContent = "إغلاق التنبيه";
+      alertBtn.classList.remove('bg-white', 'text-red-600');
+      alertBtn.classList.add('bg-gray-800', 'text-white', 'hover:bg-gray-700');
+    }
+  }
+
+  alertBtn.addEventListener('click', () => {
+    if (!elderID) {
+      alert("رقم الهاتف غير معروف، لا يمكن إرسال التنبيه.");
+      return;
+    }
+
+    if (alertActive) {
+      closeAlert();
+    } else {
+      if (!navigator.geolocation) {
+        alert("المتصفح لا يدعم الحصول على الموقع.");
+        sendAlert(null);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          sendAlert({ lat, lon });
+        },
+        error => {
+          console.warn('خطأ في الحصول على الموقع:', error.message);
+          sendAlert(null);
+        },
+        { timeout: 10000 }
+      );
+    }
+  });
+
+  async function sendAlert(location) {
+    try {
+      const alertData = {
+        alert: true,
+        name: elderName,
+        time: new Date().toISOString(),
+        ...(location ? { location } : {})
+      };
+
+      const alertRef = doc(db, "alerts", elderID);
+      await setDoc(alertRef, alertData);
+
+      alertActive = true;
+      alertBtn.textContent = "إغلاق التنبيه";
+      alertBtn.classList.remove('bg-white', 'text-red-600');
+      alertBtn.classList.add('bg-gray-800', 'text-white', 'hover:bg-gray-700');
+
+      const utterance = new SpeechSynthesisUtterance('تم إرسال تنبيه الطوارئ! المساعدة قادمة في الطريق!');
+      utterance.lang = 'ar-SA';
+      speechSynthesis.speak(utterance);
+
+    } catch (error) {
+      console.error("خطأ أثناء إرسال التنبيه:", error);
+      alert("فشل في إرسال التنبيه، يرجى المحاولة لاحقًا.");
+    }
+  }
+
+  async function closeAlert() {
+    try {
+      const alertRef = doc(db, "alerts", elderID);
+      await updateDoc(alertRef, { alert: false });
+
+      alertActive = false;
+      alertBtn.textContent = "إرسال تنبيه";
+      alertBtn.classList.remove('bg-gray-800', 'text-white', 'hover:bg-gray-700');
+      alertBtn.classList.add('bg-white', 'text-red-600');
+
+    } catch (error) {
+      console.error("خطأ أثناء إغلاق التنبيه:", error);
+      alert("حدث خطأ أثناء إغلاق التنبيه.");
+    }
+  }
+</script>
+
+</body>
+</html>

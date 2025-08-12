@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>الصور العائلية المشتركة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap');
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-attachment: fixed;
+        }
+
+        .gallery-image {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .gallery-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0,0,0,0.4);
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+         .return-button {
+      background-color: transparent;
+      border: 2px solid #eee7e7;
+      color: #eedbdb;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .return-button:hover {
+      background-color: #d4c9c9;
+      color: #1c0070;
+    }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-blue-900 to-blue-300 p-10 min-h-screen">
+    <a href="elder-home.html" class="absolute top-5 right-5 z-10">
+    <button class="return-button" aria-label="العودة إلى الصفحة الرئيسية">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </button>
+  </a>
+
+    <h2 class="text-white text-center mb-8 text-4xl font-extrabold" style="text-shadow: 5px 5px 4px #17191b; animation: slideDown 1s ease forwards;">
+        الصور العائلية المشتركة
+    </h2>
+    
+    <div class="gallery grid  lg:grid-cols-4 xl:grid-cols-5 gap-5" id="galleryContainer">
+        </div>
+
+    <script>
+        const userID = localStorage.getItem('elderID');
+        const container = document.getElementById("galleryContainer");
+        const allImages = JSON.parse(localStorage.getItem("sharedImages")) || [];
+        const images = allImages.filter(imgObj => imgObj.id === userID);
+
+        if (!userID) {
+            container.innerHTML = `<div class="text-center text-white text-lg mt-12">
+                أنت غير مسجل الدخول. يرجى تسجيل الدخول أولاً.
+            </div>`;
+            setTimeout(() => { window.location.href = 'elder-login.html'; }, 3000);
+        } else if (images.length === 0) {
+            container.innerHTML = `<div class="text-center text-white text-lg mt-12">
+                لم يتم العثور على صور لهذا المعرّف: ${userID}
+            </div>`;
+        } else {
+            images.forEach(imgObj => {
+                const img = document.createElement("img");
+                img.src = imgObj.src;
+                img.alt = "صورة عائلية مشتركة";
+                img.classList.add(
+                    "gallery-image",
+                    "w-full",
+                    "rounded-xl",
+                    "shadow-lg",
+                    "cursor-pointer",
+                    "object-cover",
+                    "h-40"
+                );
+                container.appendChild(img);
+            });
+        }
+    </script>
+</body>
+</html>

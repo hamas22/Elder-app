@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تسجيل دخول فرد العائلة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-image: url(img/bg3.jpg);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            overflow: hidden;
+            height: 100vh;
+            color: white;
+            position: relative;
+        }
+
+        .space-animation {
+            position: fixed;
+            width: 100%;
+            height: 80%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: backgroundMove 30s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 200px 200px; }
+        }
+        
+        .btn-submit {
+            transition: all 0.5s;
+            position: relative;
+        }
+
+        .btn-submit::after {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            transition: 0.5s;
+            transform-origin: center;
+        }
+        
+        .btn-submit::before {
+            content: "";
+            transform-origin: center;
+            position: absolute;
+            top: 80%;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            transition: 0.5s;
+        }
+        
+        .btn-submit:hover::before,
+        .btn-submit:hover::after {
+            transform: scale(0);
+        }
+        
+        .btn-submit:hover {
+            box-shadow: inset 0px 0px 25px #bdd5fc;
+            color: #eefbff;
+        }
+    </style>
+</head>
+<body>
+    <div class="space-animation"></div>
+
+    <div class="flex justify-center items-center h-screen p-4">
+        <div class="bg-transparent backdrop-blur-lg rounded-3xl p-8 max-w-sm w-full shadow-2xl">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#b9d3f8]" style="font-family: cursive; text-shadow: 2px 0px 5px rgb(63, 80, 122);">
+                تسجيل دخول فرد العائلة
+            </h2>
+            <form id="familyLoginForm" class="space-y-4">
+                <div>
+                    <input type="text" id="familyName" placeholder="اسم فرد العائلة" required 
+                           class="w-full px-4 py-3 rounded-xl border-none text-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300">
+                </div>
+                <div>
+                    <input type="text" id="elderName" placeholder="اسم المسن" required 
+                           class="w-full px-4 py-3 rounded-xl border-none text-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300">
+                </div>
+                <div>
+                    <input type="text" id="familyID" placeholder="رقم هاتف المسن" required 
+                           class="w-full px-4 py-3 rounded-xl border-none text-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300">
+                </div>
+                
+                <div class="pt-4">
+                    <button type="submit" 
+                            class="btn-submit w-full h-12 border-4 border-double border-[#3d67a2] outline-none bg-transparent text-white rounded-full font-bold text-xl cursor-pointer">
+                        تسجيل الدخول
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBfkZJ8uto9wZ-N4_RdFvRtUhhnfwvBbk",
+            authDomain: "elder-app-26500.firebaseapp.com",
+            projectId: "elder-app-26500",
+            storageBucket: "elder-app-26500.appspot.com",
+            messagingSenderId: "104692158450",
+            appId: "1:104692158450:web:4c368876ebc9f43e42656b",
+            measurementId: "G-WHQRY7EGZW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const form = document.getElementById('familyLoginForm');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const familyName = document.getElementById('familyName').value.trim();
+            const elderName = document.getElementById('elderName').value.trim();
+            const elderPhone = document.getElementById('familyID').value.trim();
+
+            const eldersRef = collection(db, "elders");
+            const q = query(eldersRef,
+                            where("phone", "==", elderPhone),
+                            where("name", "==", elderName));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                alert("لا يوجد مسن بالاسم ورقم الهاتف المدخلين، يرجى التحقق من البيانات.");
+                return;
+            }
+
+            localStorage.setItem('familyName', familyName);
+            localStorage.setItem('elderName', elderName);
+            localStorage.setItem('elderPhone', elderPhone);
+
+            window.location.href = 'family-home.html';
+        });
+    </script>
+</body>
+</html>

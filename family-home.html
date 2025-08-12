@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة تحكم العائلة - بترولي</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #00396a; 
+            font-family: 'Cairo', sans-serif;
+            color: white;
+        }
+
+        #starfield-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .text-glow {
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.8), 0 0 20px rgba(34, 211, 238, 0.5);
+        }
+        
+        .box-glow:hover {
+            box-shadow: 0 0 25px rgba(34, 150, 238, 0.5), inset 0 0 15px rgba(34, 143, 238, 0.2);
+            border-color: #22d3ee;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none; 
+            scrollbar-width: none; 
+        }
+             .return-button {
+      background-color: transparent;
+      border: 2px solid #fff1f1;
+      color: #ffeaea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .return-button:hover {
+      background-color: #d4c9c9;
+      color: #1c0070;
+    }
+    </style>
+</head>
+<body>
+ <a href="family-login.html" class="absolute top-5 right-5 z-10 ">
+    <button class="return-button" aria-label="العودة إلى الصفحة الرئيسية">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </button>
+  </a>
+    <canvas id="starfield-canvas"></canvas>
+
+    <div id="alertBox" class="hidden fixed top-0 left-0 w-full bg-red-600/90 text-white font-bold text-xl p-5 text-center shadow-lg shadow-red-500/50 z-50 flex items-center justify-center" role="alert" aria-live="assertive" aria-atomic="true">
+        <span>🚨 قد يكون المريض <span id="patientName" class="mx-2"></span> بحاجة إلى مساعدة عاجلة. برجاء التواصل فورًا.</span>
+        <button onclick="stopAlarm()" class="bg-white text-red-600 font-bold rounded-full px-5 py-2 mr-4 hover:bg-red-100 transition-colors">تم</button>
+    </div>
+    
+    <div class="relative min-h-screen flex flex-col items-center justify-center p-4 overflow-y-auto no-scrollbar">
+        <div class="w-full max-w-5xl mx-auto py-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-center mb-12 text-cyan-200 text-glow pt-4">
+                أهلاً بك، <span id="familyNameDisplay">فرد العائلة</span>
+            </h1>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <div class="box-glow bg-cyan-950/60 backdrop-blur-md border border-cyan-500/40 rounded-3xl p-6 text-center flex flex-col items-center justify-center cursor-pointer transition-all duration-300 transform hover:scale-105" onclick="location.href='treatment.html'">
+                    <img src="https://img.icons8.com/ios-filled/100/67e8f9/medical-heart.png" alt="أيقونة العلاج" class="w-20 h-20 mb-4" />
+                    <h3 class="text-2xl font-bold text-cyan-200 mb-2">العلاج والمواعيد</h3>
+                    <p class="text-cyan-100/80">إدارة العلاج وجدولة المواعيد للمريض.</p>
+                </div>
+
+                <div class="box-glow bg-cyan-950/60 backdrop-blur-md border border-cyan-500/40 rounded-3xl p-6 text-center flex flex-col items-center justify-center cursor-pointer transition-all duration-300 transform hover:scale-105" onclick="location.href='voice-family.html'">
+                    <img src="https://img.icons8.com/ios/100/67e8f9/microphone--v1.png" alt="أيقونة الرسائل الصوتية" class="w-20 h-20 mb-4" />
+                    <h3 class="text-2xl font-bold text-cyan-200 mb-2">رسائل المُسن الصوتية</h3>
+                    <p class="text-cyan-100/80">استمع للرسائل الصوتية المُرسلة من المُسن.</p>
+                </div>
+
+                <div class="box-glow bg-cyan-950/60 backdrop-blur-md border border-cyan-500/40 rounded-3xl p-6 text-center flex flex-col items-center justify-center cursor-pointer transition-all duration-300 transform hover:scale-105" onclick="location.href='add-images.html'">
+                    <img src="https://img.icons8.com/ios/100/67e8f9/video-playlist.png" alt="أيقونة إضافة الفيديوهات" class="w-20 h-20 mb-4" />
+                    <h3 class="text-2xl font-bold text-cyan-200 mb-2">إضافة فيديوهات للمُسن</h3>
+                    <p class="text-cyan-100/80">رفع وإدارة الفيديوهات لمشاركتها مع المُسن.</p>
+                </div>
+
+                <div class="box-glow bg-cyan-950/60 backdrop-blur-md border border-cyan-500/40 rounded-3xl p-6 text-center flex flex-col items-center justify-center cursor-pointer transition-all duration-300 transform hover:scale-105" onclick="location.href='elder-centers.html'">
+                    <img src="https://img.icons8.com/ios-filled/100/67e8f9/hospital-3.png" alt="أيقونة دار الرعاية" class="w-20 h-20 mb-4" />
+                    <h3 class="text-2xl font-bold text-cyan-200 mb-2">دار الرعاية</h3>
+                    <p class="text-cyan-100/80">الوصول للمعلومات والخدمات المتعلقة بدار الرعاية.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const canvas = document.getElementById('starfield-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const stars = [];
+    const numStars = 300;
+
+    for (let i = 0; i < numStars; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2 + 1,
+            speed: Math.random() * 0.5 + 0.1
+        });
+    }
+
+    function drawStars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(200, 255, 255, 0.7)'; 
+        stars.forEach(star => {
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size / 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            star.x -= star.speed;
+            if (star.x < 0) {
+                star.x = canvas.width;
+            }
+        });
+        requestAnimationFrame(drawStars);
+    }
+    drawStars();
+    </script>
+
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCBfkZJ8uto9wZ-N4_RdFvRtUhhnfwvBbk",
+      authDomain: "elder-app-26500.firebaseapp.com",
+      projectId: "elder-app-26500",
+      storageBucket: "elder-app-26500.appspot.com",
+      messagingSenderId: "104692158450",
+      appId: "1:104692158450:web:4c368876ebc9f43e42656b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const elderPhone = localStorage.getItem('elderID') || localStorage.getItem('linkedElderID');
+    const familyName = localStorage.getItem('familyMemberName') || "فرد العائلة";
+
+    document.getElementById('familyNameDisplay').textContent = familyName;
+
+    const alertBox = document.getElementById('alertBox');
+    const patientNameSpan = document.getElementById('patientName');
+
+    const alarmAudio = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
+    alarmAudio.loop = true;
+    alarmAudio.preload = 'auto';
+
+    let alertActive = false;
+
+    async function stopAlarm() {
+      try {
+        alarmAudio.pause();
+        alarmAudio.currentTime = 0;
+        alertBox.classList.add('hidden');
+        alertActive = false;
+
+        if (elderPhone) {
+          const alertRef = doc(db, "alerts", elderPhone);
+          await updateDoc(alertRef, { alert: false });
+        }
+      } catch (err) {
+        console.error("فشل إيقاف التنبيه:", err);
+      }
+    }
+
+    function showAlert(name) {
+      const finalName = name || localStorage.getItem('elderName') || "المريض";
+      patientNameSpan.textContent = finalName;
+      alertBox.classList.remove('hidden');
+
+      if (!alertActive) {
+        alertActive = true;
+
+        alarmAudio.play().catch((err) => {
+          console.warn("لم يتم تشغيل الصوت تلقائيًا:", err.message);
+        });
+
+        if (navigator.vibrate) {
+          navigator.vibrate([800, 400, 800, 400, 800]); // اهتزاز متقطع
+        }
+
+        try {
+          const utterance = new SpeechSynthesisUtterance("تنبيه طارئ! الرجاء التحقق من حالة " + finalName + " فوراً.");
+          utterance.lang = 'ar-SA';
+          speechSynthesis.speak(utterance);
+        } catch (e) {
+          console.error("فشل النطق الصوتي:", e);
+        }
+      }
+    }
+
+    if (elderPhone) {
+      const alertRef = doc(db, "alerts", elderPhone);
+      onSnapshot(alertRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.alert === true) {
+            if (!alertActive) {
+              showAlert(data.name);
+            }
+          } else {
+            if (alertActive) {
+              stopAlarm();
+            }
+          }
+        } else {
+          if (alertActive) stopAlarm();
+        }
+      });
+    } else {
+      console.warn("لا يوجد معرف للمُسن (elderID) محفوظ في localStorage.");
+    }
+
+    window.stopAlarm = stopAlarm;
+
+  </script>
+
+</body>
+</html>
