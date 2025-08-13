@@ -1,130 +1,126 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل دخول المسن</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-            animation: fadeIn 1.5s ease-in both;
-        }
-        .btn-submit {
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-        .btn-submit:hover {
-            transform: scale(1.05);
-        }
-        .input-style {
-            background-color: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: box-shadow 0.3s ease;
-        }
-        .input-style:focus {
-            box-shadow: 0 0 10px rgba(0, 125, 202, 0.5);
-        }
-        .container-card {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تسجيل دخول المسن</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 1.5s ease-in both;
+    }
+    .btn-submit {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-submit::after {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 0;
+      width: 95%;
+      height: 40%;
+      transition: 0.5s;
+      transform-origin: center;
+    }
+    .btn-submit::before {
+      content: "";
+      position: absolute;
+      top: 80%;
+      left: 0;
+      width: 95%;
+      height: 40%;
+      transition: 0.5s;
+      transform-origin: center;
+    }
+    .btn-submit:hover::before,
+    .btn-submit:hover::after {
+      transform: scale(0);
+    }
+  </style>
 </head>
-<body class="m-0 p-0 bg-center bg-cover font-sans overflow-hidden flex justify-center items-center h-screen" style="background-image: url('img/bg3.jpg');">
-    <div class="w-[90%] max-w-md p-8 rounded-2xl container-card shadow-lg animate-fadeIn">
-        <h2 class="mb-6 text-center text-3xl font-bold text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
-            تسجيل دخول المُسن
-        </h2>
-        <form onsubmit="event.preventDefault(); handleElderLogin();" class="flex flex-col">
-            <input type="text" id="elderName" placeholder="الاسم الكامل" class="mb-4 rounded-lg px-4 py-3 outline-none input-style text-gray-800" />
-            <input type="number" id="elderAge" placeholder="العمر" class="mb-4 rounded-lg px-4 py-3 outline-none input-style text-gray-800" />
-            <input type="password" id="elderPIN" placeholder="الرقم السري (4 أرقام)" class="mb-6 rounded-lg px-4 py-3 outline-none input-style text-gray-800" maxlength="4" />
-            <button type="submit" class="btn-submit w-40 h-14 border-4 rounded-full text-white font-bold text-lg cursor-pointer bg-blue-600 hover:bg-blue-700 m-auto">
-                دخول
-            </button>
-        </form>
+<body class="m-0 p-0 bg-center bg-cover font-sans overflow-hidden" style="background-image: url('img/bg3.jpg');">
+  <div class="min-h-screen flex flex-col justify-center items-center">
+    <div class="w-[90%] max-w-md p-8 rounded-2xl bg-transparent backdrop-blur-[10px] shadow-[0_0_15px_rgba(0,0,0,0.1)] animate-fadeIn">
+      <h2 class="mb-6 text-center text-2xl font-bold" style="color: rgb(1, 125, 202); font-family: cursive;">تسجيل دخول </h2>
+
+      <form onsubmit="event.preventDefault(); goToHome();" class="flex flex-col">
+        <input type="text" id="elderName" placeholder="الاسم الكامل" required
+               class="mb-4 rounded-lg px-4 py-3 outline-none" />
+
+        <input type="number" id="elderAge" placeholder="العمر" required
+               class="mb-4 rounded-lg px-4 py-3 outline-none" />
+
+        <input type="text" id="elderID" placeholder="رقم الهاتف" required
+               class="mb-6 rounded-lg px-4 py-3 outline-none" />
+
+        <button type="submit" class="btn-submit w-40 h-14 border-4 rounded-[20px] text-white font-bold text-base cursor-pointer bg-transparent m-auto" style="border-style: ridge; border-color: rgb(2, 90, 145); font-family: cursive;">
+          دخول
+        </button>
+      </form>
     </div>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-        
-        const firebaseConfig = {
-            apiKey: "AIzaSyCBfkZJ8uto9wZ-N4_RdFvRtUhhnfwvBbk",
-            authDomain: "elder-app-26500.firebaseapp.com",
-            projectId: "elder-app-26500",
-            storageBucket: "elder-app-26500.appspot.com",
-            messagingSenderId: "104692158450",
-            appId: "1:104692158450:web:4c368876ebc9f43e42656b",
-            measurementId: "G-WHQRY7EGZW"
-        };
-        
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        
-        function generateRandomPIN() {
-            return Math.floor(1000 + Math.random() * 9000).toString();
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCBfkZJ8uto9wZ-N4_RdFvRtUhhnfwvBbk",
+      authDomain: "elder-app-26500.firebaseapp.com",
+      projectId: "elder-app-26500",
+      storageBucket: "elder-app-26500.appspot.com",
+      messagingSenderId: "104692158450",
+      appId: "1:104692158450:web:4c368876ebc9f43e42656b",
+      measurementId: "G-WHQRY7EGZW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.goToHome = async function () {
+      const name = document.getElementById('elderName').value.trim();
+      const age = Number(document.getElementById('elderAge').value);
+      const phone = document.getElementById('elderID').value.trim();
+
+      localStorage.setItem('elderName', name);
+      localStorage.setItem('elderAge', age);
+      localStorage.setItem('elderID', phone);
+
+      try {
+        const eldersRef = collection(db, "elders");
+        const q = query(eldersRef,
+                        where("phone", "==", phone),
+                        where("name", "==", name));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          await addDoc(eldersRef, {
+            name,
+            age,
+            phone,
+            createdAt: new Date()
+          });
+          console.log("تم إضافة حساب جديد.");
+        } else {
+          console.log("المستخدم موجود بالفعل.");
         }
 
-        window.handleElderLogin = async function () {
-            const name = document.getElementById('elderName').value.trim();
-            const age = document.getElementById('elderAge').value;
-            const pinInput = document.getElementById('elderPIN');
-            const pin = pinInput.value.trim();
+        alert("تم تسجيل الدخول بنجاح 🎉");
+        window.location.href = 'elder-home.html';
 
-            if (pin && pin.length === 4) {
-                try {
-                    const eldersRef = collection(db, "elders");
-                    const q = query(eldersRef, where("pin", "==", pin));
-                    const querySnapshot = await getDocs(q);
-
-                    if (querySnapshot.empty) {
-                        alert("الرقم السري غير صحيح. يرجى المحاولة مرة أخرى أو ترك حقل الرقم السري فارغاً للتسجيل.");
-                        return;
-                    }
-
-                    const elderData = querySnapshot.docs[0].data();
-                    localStorage.setItem('elderName', elderData.name);
-                    localStorage.setItem('elderAge', elderData.age);
-                    localStorage.setItem('elderPIN', pin);
-                    alert(`أهلاً بك يا ${elderData.name}!`);
-                    window.location.href = 'elder-home.html';
-                } catch (e) {
-                    console.error("Error logging in: ", e);
-                    alert("حدث خطأ أثناء تسجيل الدخول، يرجى المحاولة لاحقًا.");
-                }
-            } else {
-                if (!name || !age) {
-                    alert("لإنشاء حساب جديد، يرجى إدخال الاسم والعمر.");
-                    return;
-                }
-
-                try {
-                    const eldersRef = collection(db, "elders");
-                    const newPin = generateRandomPIN();
-                    
-                    await addDoc(eldersRef, {
-                        name,
-                        age: Number(age),
-                        pin: newPin,
-                        createdAt: new Date()
-                    });
-
-                    alert(`تم إنشاء حسابك بنجاح! رقمك السري هو: ${newPin}. يرجى الاحتفاظ به لتسجيل الدخول في المرات القادمة.`);
-                    localStorage.setItem('elderName', name);
-                    localStorage.setItem('elderAge', age);
-                    localStorage.setItem('elderPIN', newPin);
-                    window.location.href = 'elder-home.html';
-                } catch (e) {
-                    console.error("Error creating new user: ", e);
-                    alert("حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة لاحقًا.");
-                }
-            }
-        };
-    </script>
+      } catch (e) {
+        console.error("حدث خطأ في التسجيل:", e);
+        alert("حدث خطأ في التسجيل، يرجى المحاولة لاحقًا");
+      }
+    };
+  </script>
 </body>
 </html>
